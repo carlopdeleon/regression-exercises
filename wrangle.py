@@ -19,7 +19,7 @@ def get_zillow():
     filename = "zillow.csv"
 
     if os.path.isfile(filename):
-        return pd.read_csv(filename, index_col=0)
+        return pd.read_csv(filename)
     else:
         # read the SQL query into a dataframe
         df = pd.read_sql("select bedroomcnt, bathroomcnt, calculatedfinishedsquarefeet, taxvaluedollarcnt, yearbuilt, taxamount,\
@@ -37,10 +37,21 @@ def get_zillow():
     
 
 def clean_zillow(zillow):
-
 # Dropped all nulls. Less than 1% of data.
     zillow = zillow.dropna()
-
+    # Drop dupes
+    zillow = zillow.drop_duplicates()
+    # Drop the nulls. Less than 1% of the data
+    zillow = zillow.dropna()
+    # renaming columns
+    zillow = zillow.rename(columns = {'bedroomcnt': 'bedrooms', 
+                         'bathroomcnt':'bathrooms', 
+                         'calculatedfinishedsquarefeet':'sq_ft',
+                         'taxvaluedollarcnt':'tax_value',
+                          'taxamount':'tax_amount',
+                         'yearbuilt':'year'})
+    # tax rate
+    zillow['tax_rate'] = zillow['tax_value']/ zillow['tax_amount'] * 100
     return zillow
 
 
@@ -48,11 +59,23 @@ def clean_zillow(zillow):
 
 
 def wrangle_zillow():
-
     #Acquire Zillow data
     zillow = get_zillow()
+    # Reset index and drop prior index
+    zillow = zillow.reset_index().drop('index',axis=1)
+    # Drop dupes
+    zillow = zillow.drop_duplicates()
     # Drop the nulls. Less than 1% of the data
     zillow = zillow.dropna()
+    # renaming columns
+    zillow = zillow.rename(columns = {'bedroomcnt': 'bedrooms', 
+                         'bathroomcnt':'bathrooms', 
+                         'calculatedfinishedsquarefeet':'sq_ft',
+                         'taxvaluedollarcnt':'tax_value',
+                          'taxamount':'tax_amount',
+                         'yearbuilt':'year'})
+    # tax rate
+    zillow['tax_rate'] = zillow['tax_value']/ zillow['tax_amount'] * 100
 
     return zillow
     
